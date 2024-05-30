@@ -2,12 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Throwable;
+use Log;
 use App\Models\User;
 use App\Models\UserData;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -74,5 +77,113 @@ class UserController extends Controller
             'type' => 'Bearer',
             'token' => $token,
         ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $id = Auth::user()->id;
+        $validate = Validator::make($request->all(), [
+            // "username" => "required|string|max:100|unique:users,username,$id,id",
+            "password" => "required|min:8",
+            "password_confirmation" => "same:password",
+        ]);
+        if ($validate->fails()) {
+            return response()->json([
+                'status' => 400,
+                'message' => $validate->errors()
+            ], 400);
+        } else {
+            $data = $validate->validated();
+            try {
+                $user = User::findOrFail($id);
+                // Update only if there is a change in the user_code or name
+                $user->update([
+                    // 'username' => $data['username'],
+                    'password' => Hash::make($data['password']),
+                ]);
+                return response()->json([
+                    'status' => 201,
+                    'message' => 'User Data Updated Successfully',
+                    'data' => $user
+                ], 201);
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status' => 500,
+                    'message' => $th->getMessage(),
+                ], 500);
+            }
+        }
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $id = Auth::user()->id;
+        $validate = Validator::make($request->all(), [
+            // "email" => "required|string|unique:users,email,$id,id",
+            "username" => "required|string|max:100|unique:users,username,$id,id",
+            "birthdate" => "required|date",
+            "gender" => "required|integer|max:1",
+            "height" => "required|decimal:0,2",
+            "weight" => "required|decimal:0,2",
+            "image" => "nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048",
+        ]);
+        if ($validate->fails()) {
+            return response()->json([
+                'status' => 400,
+                'message' => $validate->errors()
+            ], 400);
+        } else {
+            $data = $validate->validated();
+            try {
+                $user = User::findOrFail($id);
+                $userData = UserData::where('user_id', $id)->firstOrFail();
+                // Update only if there is a change in the column except photo
+                $user->update([
+                    'username' => $data['username'],
+                ]);
+                $userData->update([
+                    "birthdate" => $data['birthdate'],
+                    "gender" => $data['gender'],
+                    "height" => $data['height'],
+                    "weight" => $data['weight'],
+                ]);
+                // return $userData;
+                // Update the photo if a new one is provided
+                if ($request->hasFile('image')) {
+                    $uploadFolder = 'profile-picture';
+                    // Delete the old photo if it exists
+                    if ($userData->image) {
+                        $photoPath = basename($userData->image);
+                        $storagePath = 'profile-picture/' . $photoPath;
+                        // Check if the file exists before attempting to delete
+                        if (Storage::disk('public')->exists($storagePath)) {
+                            // Delete the file from storage
+                            Storage::disk('public')->delete($storagePath);
+                        } else {
+                            \Log::info('File does not exist: ' . $storagePath);
+                        }
+                    }
+
+                    $image = $request->file('image');
+                    $image_uploaded_path = $image->store($uploadFolder, 'public');
+                    $userData->update(['image' => Storage::disk('public')->url($image_uploaded_path)]);
+                }
+                return response()->json([
+                    'status' => 201,
+                    'message' => 'Data Updated Successfully',
+                    'data' => $user
+                ], 201);
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'status' => 500,
+                    'message' => $th->getMessage(),
+                ], 500);
+            }
+        }
+    }
+
+    public function logout(Request $request)
+    {
+        return $request->user()->currentAccessToken()->delete();
     }
 }

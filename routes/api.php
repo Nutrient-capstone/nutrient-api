@@ -19,6 +19,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/tes-login', function () {
         return response()->json('yu sudah login');
     });
+    // Route::get('/getBmi', [UserController::class, 'getBmi']);
+    Route::put('/change-password', [UserController::class, 'changePassword']);
+    Route::put('/profiles', [UserController::class, 'updateProfile']);
+    Route::post('/logout', [UserController::class, 'logout']);
 });
 
 Route::get('/tes', function () {
