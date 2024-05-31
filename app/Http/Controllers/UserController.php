@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AccountCollection;
 use Log;
 use App\Models\User;
 use App\Models\UserData;
@@ -79,13 +80,32 @@ class UserController extends Controller
         ]);
     }
 
+    public function get()
+    {
+        try {
+            $id = Auth::user()->id;
+            $user = User::findOrFail($id)->join('user_data', 'users.id', '=', 'user_data.id')->get();
+            // return $user;
+            return response()->json([
+                'status' => 200,
+                // 'data' => $user
+                'data' => AccountCollection::collection($user)
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 500,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
     public function changePassword(Request $request)
     {
         $id = Auth::user()->id;
         $validate = Validator::make($request->all(), [
             // "username" => "required|string|max:100|unique:users,username,$id,id",
-            "password" => "required|min:8",
-            "password_confirmation" => "same:password",
+            "password" => "required|min:8|confirmed",
+            // "password_confirmation" => "same:password",
         ]);
         if ($validate->fails()) {
             return response()->json([
@@ -168,10 +188,11 @@ class UserController extends Controller
                     $image_uploaded_path = $image->store($uploadFolder, 'public');
                     $userData->update(['image' => Storage::disk('public')->url($image_uploaded_path)]);
                 }
+                $user = User::findOrFail($id)->join('user_data', 'users.id', '=', 'user_data.id')->get();
                 return response()->json([
                     'status' => 201,
                     'message' => 'Data Updated Successfully',
-                    'data' => $user
+                    'data' => AccountCollection::collection($user)
                 ], 201);
             } catch (\Throwable $th) {
                 return response()->json([

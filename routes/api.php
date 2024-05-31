@@ -21,6 +21,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     // Route::get('/getBmi', [UserController::class, 'getBmi']);
     Route::put('/change-password', [UserController::class, 'changePassword']);
+    Route::get('/profiles', [UserController::class, 'get']);
     Route::put('/profiles', [UserController::class, 'updateProfile']);
     Route::post('/logout', [UserController::class, 'logout']);
 });
