@@ -99,13 +99,34 @@ class UserController extends Controller
         }
     }
 
+    public function getBmi()
+    {
+        try {
+            $id = Auth::user()->id;
+            $user = User::findOrFail($id)->join('user_data', 'users.id', '=', 'user_data.id')->first();
+            // return $user;
+            $height = $user->height;
+            $weight = $user->weight;
+            $bmi = $weight / (($height / 100) * 2);
+            return response()->json([
+                'status' => 200,
+                'data' => [
+                    'bmi' => $bmi,
+                ]
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => 500,
+                'message' => $th->getMessage(),
+            ], 500);
+        }
+    }
+
     public function changePassword(Request $request)
     {
         $id = Auth::user()->id;
         $validate = Validator::make($request->all(), [
-            // "username" => "required|string|max:100|unique:users,username,$id,id",
             "password" => "required|min:8|confirmed",
-            // "password_confirmation" => "same:password",
         ]);
         if ($validate->fails()) {
             return response()->json([
