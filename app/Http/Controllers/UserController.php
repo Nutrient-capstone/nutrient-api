@@ -15,6 +15,16 @@ use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
+    public function userStatus(Request $request)
+    {
+        $user = Auth::user();
+
+        return response()->json([
+            'status' => 200,
+            'new_user' => $user->new_user,
+        ], 200);
+    }
+
     public function register(Request $request)
     {
         $validate = Validator::make($request->all(), [
