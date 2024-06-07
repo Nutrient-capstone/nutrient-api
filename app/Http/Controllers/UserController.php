@@ -81,6 +81,7 @@ class UserController extends Controller
                 'username' => $user->username,
                 'email' => $user->email
             ],
+            'new_user' => $user->new_user,
         ]);
     }
 
