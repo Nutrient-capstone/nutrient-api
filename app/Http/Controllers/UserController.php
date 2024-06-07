@@ -77,6 +77,10 @@ class UserController extends Controller
         return response()->json([
             'type' => 'Bearer',
             'token' => $token,
+            'data' => [
+                'username' => $user->username,
+                'email' => $user->email
+            ],
         ]);
     }
 
