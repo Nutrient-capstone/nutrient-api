@@ -26,6 +26,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
 
     Route::get('/user-status', [UserController::class, 'userStatus']);
+    Route::post('/fill-assestment', [UserController::class, 'updateAssesment']);
 });
 
 Route::get('/tes', function () {

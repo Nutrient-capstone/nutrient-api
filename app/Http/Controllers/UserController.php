@@ -15,6 +15,26 @@ use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
+    public function updateAssesment(Request $request)
+    {
+        $user = Auth::user();
+
+        $validatedData = $request->validate([
+            'weight' => 'required',
+            'height' => 'required'
+        ]);
+
+        $user->userData()->update([
+            'weight' => $validatedData['weight'],
+            'height' => $validatedData['height']
+        ]);
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Update successfull',
+        ], 200);
+    }
+
     public function userStatus(Request $request)
     {
         $user = Auth::user();
