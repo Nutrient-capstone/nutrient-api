@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\AccountCollection;
+use App\Http\Resources\MyProfileResources;
 use Log;
 use App\Models\User;
 use App\Models\UserData;
@@ -16,6 +17,18 @@ use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
+
+    public function myprofile(Request $request)
+    {
+        $user = Auth::user();
+        $data = $user->userData()->first();
+
+        return response()->json([
+            'status' => 200,
+            'data' => new MyProfileResources($data)
+        ]);
+    }
+
     public function updateAssesment(Request $request)
     {
         $user = Auth::user();
