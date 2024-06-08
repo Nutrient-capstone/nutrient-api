@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserData;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -24,15 +25,31 @@ class UserController extends Controller
             'height' => 'required'
         ]);
 
-        $user->userData()->update([
-            'weight' => $validatedData['weight'],
-            'height' => $validatedData['height']
-        ]);
+        try {
+            DB::beginTransaction();
+            $user->update([
+                'new_user' => false
+            ]);
 
-        return response()->json([
-            'status' => 200,
-            'message' => 'Update successfull',
-        ], 200);
+            $user->userData()->update([
+                'weight' => $validatedData['weight'],
+                'height' => $validatedData['height']
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Update successfull',
+            ], 200);
+        } catch (\Throwable $th) {
+
+            DB::rollBack();
+            return response()->json([
+                'status' => 400,
+                'message' => $th->getMessage()
+            ], 400);
+        }
     }
 
     public function userStatus(Request $request)
