@@ -36,8 +36,8 @@ class UserController extends Controller
         $user = Auth::user();
 
         $validatedData = $request->validate([
-            'weight' => 'required',
-            'height' => 'required'
+            'weight' => "required|decimal:0,2|gt:1",
+            'height' => "required|decimal:0,2|gt:1"
         ]);
 
         try {
