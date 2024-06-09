@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Bmi;
 use App\Models\Food;
 use App\Models\UserData;
 use App\Models\DailyIntake;
@@ -58,5 +59,10 @@ class User extends Authenticatable
     public function dailyIntake(): HasMany
     {
         return $this->hasMany(DailyIntake::class);
+    }
+
+    public function bmi(): HasMany
+    {
+        return $this->hasMany(Bmi::class);
     }
 }

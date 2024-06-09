@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use PhpParser\Node\Expr\Cast\Double;
+use Ramsey\Uuid\Type\Integer;
 
 class UserController extends Controller
 {
@@ -172,11 +174,12 @@ class UserController extends Controller
             // return $user;
             $height = $user->height;
             $weight = $user->weight;
-            $bmi = $weight / (($height / 100) * 2);
+            $resultBmi = $this->countBmi($weight, $height);
             return response()->json([
                 'status' => 200,
                 'data' => [
-                    'bmi' => $bmi,
+                    'bmi' => $resultBmi['bmi'],
+                    'status' => $resultBmi['status']
                 ]
             ], 200);
         } catch (\Throwable $th) {
@@ -229,8 +232,8 @@ class UserController extends Controller
             "username" => "required|string|max:100|unique:users,username,$id,id",
             "birthdate" => "required|date",
             "gender" => "required|integer|max:1",
-            "height" => "required|decimal:0,2",
-            "weight" => "required|decimal:0,2",
+            "height" => "required|decimal:0,2|gt:1",
+            "weight" => "required|decimal:0,2|gt:1",
             "image" => "nullable|image|mimes:jpg,png,jpeg,gif,svg|max:2048",
         ]);
         if ($validate->fails()) {
@@ -241,6 +244,7 @@ class UserController extends Controller
         } else {
             $data = $validate->validated();
             try {
+                DB::beginTransaction();
                 $user = User::findOrFail($id);
                 $userData = UserData::where('user_id', $id)->firstOrFail();
                 // Update only if there is a change in the column except photo
@@ -253,6 +257,16 @@ class UserController extends Controller
                     "height" => $data['height'],
                     "weight" => $data['weight'],
                 ]);
+                if ($userData->wasChanged('height') || $userData->wasChanged('height')) {
+                    $resultBmi = $this->countBmi($data['weight'], $data['height']);
+                    $user->bmi()->create([
+                        "height" => $data['height'],
+                        "weight" => $data['weight'],
+                        "bmi" => $resultBmi['bmi'],
+                        "status" => $resultBmi['status'],
+                        "user_id" => $user->id
+                    ]);
+                }
                 // return $userData;
                 // Update the photo if a new one is provided
                 if ($request->hasFile('image')) {
@@ -275,12 +289,14 @@ class UserController extends Controller
                     $userData->update(['image' => Storage::disk('public')->url($image_uploaded_path)]);
                 }
                 $user = User::findOrFail($id)->join('user_data', 'users.id', '=', 'user_data.id')->get();
+                DB::commit();
                 return response()->json([
                     'status' => 201,
                     'message' => 'Data Updated Successfully',
                     'data' => AccountCollection::collection($user)
                 ], 201);
             } catch (\Throwable $th) {
+                DB::rollBack();
                 return response()->json([
                     'status' => 500,
                     'message' => $th->getMessage(),
@@ -292,5 +308,25 @@ class UserController extends Controller
     public function logout(Request $request)
     {
         return $request->user()->currentAccessToken()->delete();
+    }
+
+    private function countBmi(Float $weight,  Float $height)
+    {
+        $bmi = $weight / (($height / 100) * 2);
+
+        if ($bmi < 18.5) {
+            $status = "Underweight";
+        } elseif ($bmi >= 18.5 && $bmi <= 24.9) {
+            $status = "Normal weight";
+        } elseif ($bmi >= 25 && $bmi <= 29.9) {
+            $status = "Overweight";
+        } else {
+            $status = "Obesity";
+        }
+
+        return [
+            "bmi" => $bmi,
+            "status" => $status
+        ];
     }
 }

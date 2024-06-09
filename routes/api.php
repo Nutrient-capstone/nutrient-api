@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\BmiController;
+use App\Http\Controllers\FoodController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -24,10 +26,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/profiles', [UserController::class, 'get']);
     Route::put('/profiles', [UserController::class, 'updateProfile']);
     Route::get('/myprofile', [UserController::class, 'myprofile']);
-    Route::post('/logout', [UserController::class, 'logout']);
-
     Route::get('/user-status', [UserController::class, 'userStatus']);
     Route::post('/fill-assestment', [UserController::class, 'updateAssesment']);
+
+    Route::get('/bmis', [BmiController::class, 'index']);
+
+    Route::post('/foods', [FoodController::class, 'store']);
+
+    Route::post('/logout', [UserController::class, 'logout']);
 });
 
 Route::get('/tes', function () {
