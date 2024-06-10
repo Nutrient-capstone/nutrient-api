@@ -7,6 +7,7 @@ use App\Http\Resources\MyProfileResources;
 use Log;
 use App\Models\User;
 use App\Models\UserData;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -151,12 +152,11 @@ class UserController extends Controller
     {
         try {
             $id = Auth::user()->id;
-            $user = User::findOrFail($id)->join('user_data', 'users.id', '=', 'user_data.id')->get();
+            $user = User::with('userData')->findOrFail($id);
             // return $user;
             return response()->json([
                 'status' => 200,
-                // 'data' => $user
-                'data' => AccountCollection::collection($user)
+                'data' => new AccountCollection($user)
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([

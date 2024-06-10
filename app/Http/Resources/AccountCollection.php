@@ -18,11 +18,7 @@ class AccountCollection extends JsonResource
         return [
             'username' => $this->username,
             'email' => $this->email,
-            'birthdate' => $this->birthdate,
-            'weight' => $this->weight,
-            'height' => $this->height,
-            'gender' => $this->gender,
-            'image' => $this->image,
+            'user_data' => new UserDataResource($this->whenLoaded('userData'))
         ];
     }
 }
