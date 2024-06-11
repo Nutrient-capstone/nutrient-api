@@ -31,6 +31,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/bmis', [BmiController::class, 'index']);
 
+    Route::get('/foods', [FoodController::class, 'index']);
     Route::post('/foods', [FoodController::class, 'store']);
 
     Route::post('/logout', [UserController::class, 'logout']);

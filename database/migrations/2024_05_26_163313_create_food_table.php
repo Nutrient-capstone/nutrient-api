@@ -20,6 +20,7 @@ return new class extends Migration
             $table->integer('fat')->default(0);
             $table->integer('protein')->default(0);
             $table->integer('carbohydrate')->default(0);
+            // $table->char('comsumpsition_time', 1)->comment('1:morning, 2:afternoon, 3:night');
             $table->unsignedBigInteger('user_id');
             $table->timestamps();
 
