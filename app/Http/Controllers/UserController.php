@@ -377,6 +377,10 @@ class UserController extends Controller
 
     public function checkAuth()
     {
-        return Auth::user();
+        // return DailyIntake::create(['user_id' => 1]);
+        $users = User::get();
+        foreach ($users as $user) {
+            return $user->userData['weight'];
+        }
     }
 }
