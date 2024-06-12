@@ -277,7 +277,8 @@ class UserController extends Controller
                     "height" => $data['height'],
                     "weight" => $data['weight'],
                 ]);
-                if ($userData->wasChanged('height') || $userData->wasChanged('height')) {
+                if ($userData->wasChanged('height') || $userData->wasChanged('height') || $userData->wasChanged('birthdate')) {
+                    $dailyIntake = DailyIntake::where('user_id', $user->id)->latest()->first();
                     $resultBmi = $this->countBmi($data['weight'], $data['height']);
                     $user->bmi()->create([
                         "height" => $data['height'],
@@ -286,8 +287,13 @@ class UserController extends Controller
                         "status" => $resultBmi['status'],
                         "user_id" => $user->id
                     ]);
+                    $gender = intval($userData->gender);
+                    $age = Carbon::parse($userData->birthdate)->age;
+                    $resultBmr = $this->countBmr($gender, $age, $data['weight'], $data['height']);
+                    $dailyIntake->update([
+                        "max_calories" => $resultBmr,
+                    ]);
                 }
-                // return $userData;
                 // Update the photo if a new one is provided
                 if ($request->hasFile('image')) {
                     $uploadFolder = 'profile-picture';
