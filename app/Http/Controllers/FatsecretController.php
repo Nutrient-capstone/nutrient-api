@@ -33,7 +33,7 @@ class FatsecretController extends Controller
 
     public function search(Request $request)
     {
-        if (!$request->has('token')) {
+        if (!$request->input('token')) {
             return response()->json(['error' => 'Token is required'], 400);
         }
 
