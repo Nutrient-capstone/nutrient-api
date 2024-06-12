@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Resources\AccountCollection;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Resources\MyProfileResources;
+use App\Models\DailyIntake;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -264,6 +265,7 @@ class UserController extends Controller
             try {
                 DB::beginTransaction();
                 $user = User::findOrFail($id);
+                // return DailyIntake::where('user_id', $user->id)->latest()->first();
                 $userData = UserData::where('user_id', $id)->firstOrFail();
                 // Update only if there is a change in the column except photo
                 $user->update([

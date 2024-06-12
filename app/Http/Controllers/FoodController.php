@@ -14,7 +14,7 @@ class FoodController extends Controller
     {
         try {
             $user = Auth::user();
-            $food = Food::where('user_id', $user->id)->get();
+            $food = Food::where('user_id', $user->id)->orderBy('id', 'desc')->get();
             return response()->json([
                 'status' => 200,
                 'data' => $food

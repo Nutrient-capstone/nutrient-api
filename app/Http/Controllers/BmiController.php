@@ -13,7 +13,7 @@ class BmiController extends Controller
         $user = Auth::user();
         try {
             $user = Auth::user();
-            $bmi = Bmi::where('user_id', $user->id)->get();
+            $bmi = Bmi::where('user_id', $user->id)->orderBy('id', 'desc')->get();
             // return $user;
             return response()->json([
                 'status' => 200,

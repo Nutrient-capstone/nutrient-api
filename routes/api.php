@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BmiController;
+use App\Http\Controllers\DailyIntakeController;
 use App\Http\Controllers\FoodController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -34,6 +35,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/foods', [FoodController::class, 'index']);
     Route::post('/foods', [FoodController::class, 'store']);
+
+    Route::get('/daily-intake', [DailyIntakeController::class, 'get']);
 
     Route::get('/check-auth', [UserController::class, 'checkAuth']);
     Route::post('/logout', [UserController::class, 'logout']);
