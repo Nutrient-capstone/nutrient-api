@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BmiController;
 use App\Http\Controllers\DailyIntakeController;
+use App\Http\Controllers\FatsecretController;
 use App\Http\Controllers\FoodController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,3 +49,7 @@ Route::get('/tes', function () {
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
+
+// APi proxy fatsecret
+Route::get('/fatsecret/token', [FatsecretController::class, 'getToken']);
+Route::get('/fatsecret/search', [FatsecretController::class, 'search']);
