@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Food;
+use App\Models\DailyIntake;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -53,6 +55,7 @@ class FoodController extends Controller
             $data['image'] = '';
             $data['user_id'] = $user->id;
             try {
+                DB::beginTransaction();
                 // return [$data, 'user_id' => $id];
                 if ($request->hasFile('image')) {
                     $uploadFolder = 'food-image';
@@ -60,13 +63,25 @@ class FoodController extends Controller
                     $image_uploaded_path = $image->store($uploadFolder, 'public');
                     $data['image'] = Storage::disk('public')->url($image_uploaded_path);
                 }
+                // add food
                 $food = Food::create($data);
+                // update table daily intake
+                $dailyIntake = DailyIntake::where('user_id', $user->id)->latest()->first();
+                $dailyIntake->update([
+                    "daily_calories" => $dailyIntake['daily_calories'] + $data['calories'],
+                    "daily_sugar" => $dailyIntake['daily_sugar'] + $data['sugar'],
+                    "daily_fat" => $dailyIntake['daily_fat'] + $data['fat'],
+                    "daily_protein" => $dailyIntake['daily_protein'] + $data['protein'],
+                    "daily_carbohydrate" => $dailyIntake['daily_carbohydrate'] + $data['carbohydrate'],
+                ]);
+                DB::commit();
                 return response()->json([
                     'status' => 201,
                     'message' => 'Data Added Successfully',
                     'data' => $food
                 ], 201);
             } catch (\Throwable $th) {
+                DB::rollBack();
                 return response()->json([
                     'status' => 500,
                     'message' => $th->getMessage(),
