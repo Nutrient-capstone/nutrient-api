@@ -34,6 +34,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/foods', [FoodController::class, 'index']);
     Route::post('/foods', [FoodController::class, 'store']);
 
+    Route::get('/check-auth', [UserController::class, 'checkAuth']);
     Route::post('/logout', [UserController::class, 'logout']);
 });
 

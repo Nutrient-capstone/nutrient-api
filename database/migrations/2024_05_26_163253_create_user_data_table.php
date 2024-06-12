@@ -17,7 +17,6 @@ return new class extends Migration
             $table->double('weight', 5, 2)->default(0);
             $table->double('height', 5, 2)->default(0);
             $table->char('gender', 1)->comment('0:female, 1:male');
-            $table->boolean('new_user')->default(true);
             $table->string('image')->nullable();
             $table->unsignedBigInteger('user_id');
             $table->timestamps();

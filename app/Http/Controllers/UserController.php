@@ -52,6 +52,15 @@ class UserController extends Controller
                 'height' => $validatedData['height']
             ]);
 
+            $resultBmi = $this->countBmi($validatedData['weight'], $validatedData['height']);
+            $user->bmi()->create([
+                "height" => $validatedData['height'],
+                "weight" => $validatedData['weight'],
+                "bmi" => $resultBmi['bmi'],
+                "status" => $resultBmi['status'],
+                "user_id" => $user->id
+            ]);
+
             DB::commit();
 
             return response()->json([
@@ -169,11 +178,11 @@ class UserController extends Controller
     public function getBmi()
     {
         try {
-            $id = Auth::user()->id;
-            $user = User::findOrFail($id)->join('user_data', 'users.id', '=', 'user_data.id')->first();
+            $user = Auth::user();
+            // $user = User::findOrFail($id)->join('user_data', 'users.id', '=', 'user_data.id')->first();
             // return $user;
-            $height = $user->height;
-            $weight = $user->weight;
+            $height = $user->userData->height;
+            $weight = $user->userData->weight;
             $resultBmi = $this->countBmi($weight, $height);
             return response()->json([
                 'status' => 200,
@@ -288,12 +297,12 @@ class UserController extends Controller
                     $image_uploaded_path = $image->store($uploadFolder, 'public');
                     $userData->update(['image' => Storage::disk('public')->url($image_uploaded_path)]);
                 }
-                $user = User::findOrFail($id)->join('user_data', 'users.id', '=', 'user_data.id')->get();
+                $user = User::with('userData')->findOrFail($id);
                 DB::commit();
                 return response()->json([
                     'status' => 201,
                     'message' => 'Data Updated Successfully',
-                    'data' => AccountCollection::collection($user)
+                    'data' => new AccountCollection($user)
                 ], 201);
             } catch (\Throwable $th) {
                 DB::rollBack();
@@ -312,7 +321,9 @@ class UserController extends Controller
 
     private function countBmi(Float $weight,  Float $height)
     {
-        $bmi = $weight / (($height / 100) * 2);
+        $bmi = $weight / (($height / 100) * ($height / 100));
+        // $bmi = ($height / 100) * ($height / 100);
+        // $bmi = 70 / 3.08;
 
         if ($bmi < 18.5) {
             $status = "Underweight";
@@ -328,5 +339,10 @@ class UserController extends Controller
             "bmi" => $bmi,
             "status" => $status
         ];
+    }
+
+    public function checkAuth()
+    {
+        return Auth::user();
     }
 }
