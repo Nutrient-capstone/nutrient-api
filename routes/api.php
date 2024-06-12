@@ -52,3 +52,4 @@ Route::post('/login', [UserController::class, 'login']);
 
 // APi proxy fatsecret
 Route::get('/fatsecret/token', [FatsecretController::class, 'getToken']);
+Route::get('/fatsecret/search', [FatsecretController::class, 'search']);
