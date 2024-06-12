@@ -22,6 +22,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         return response()->json('yu sudah login');
     });
     Route::get('/profiles/bmi', [UserController::class, 'getBmi']);
+    Route::get('/profiles/bmr', [UserController::class, 'getBmr']);
     Route::put('/change-password', [UserController::class, 'changePassword']);
     Route::get('/profiles', [UserController::class, 'get']);
     Route::put('/profiles', [UserController::class, 'updateProfile']);

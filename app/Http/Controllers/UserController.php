@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\AccountCollection;
-use App\Http\Resources\MyProfileResources;
 use Log;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\UserData;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\AccountCollection;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Resources\MyProfileResources;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
-use PhpParser\Node\Expr\Cast\Double;
-use Ramsey\Uuid\Type\Integer;
 
 class UserController extends Controller
 {
@@ -35,6 +34,10 @@ class UserController extends Controller
     public function updateAssesment(Request $request)
     {
         $user = Auth::user();
+        $gender = $user->userData->gender;
+        $age = Carbon::parse($user->userData->birthdate)->age;
+
+        // return $gender;
 
         $validatedData = $request->validate([
             'weight' => "required|decimal:0,2|gt:1",
@@ -58,6 +61,12 @@ class UserController extends Controller
                 "weight" => $validatedData['weight'],
                 "bmi" => $resultBmi['bmi'],
                 "status" => $resultBmi['status'],
+                "user_id" => $user->id
+            ]);
+
+            $resultBmr = $this->countBmr($gender, $age, $validatedData['weight'], $validatedData['height']);
+            $user->dailyIntake()->create([
+                "max_calories" => $resultBmr,
                 "user_id" => $user->id
             ]);
 
@@ -339,6 +348,23 @@ class UserController extends Controller
             "bmi" => $bmi,
             "status" => $status
         ];
+    }
+
+    private function countBmr(Int $gender, Int $age, Float $weight,  Float $height)
+    {
+
+        if ($gender) { // jika gender adalah lanang
+            $bmr = (66.5 + (13.75 * $weight) + (5.003 * $height) - (6.75 * $age)) * 1.3;
+        } else { // jika gender adalah wedok
+            $bmr = (655.1 + (9.563 * $weight) + (1.850 * $height) - (4.676 * $age)) * 1.3;
+        }
+
+        return $bmr;
+    }
+
+    public function getBmr()
+    {
+        return $this->countBmr(1, 23, 67, 175);
     }
 
     public function checkAuth()
