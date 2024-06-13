@@ -16,6 +16,24 @@ class FatsecretController extends Controller
         $this->clientSecret = env('FATSECRET_CLIENT_SECRET');
     }
 
+    public function foodById(Request $request, $id)
+    {
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Authorization' => 'Bearer ' . $request->token
+        ])->get('https://platform.fatsecret.com/rest/server.api', [
+            'method' => 'food.get.v4',
+            'format' => 'json',
+            'food_id' => $id
+        ]);
+
+        if ($response->successful()) {
+            return response()->json($response->json());
+        }
+
+        return response()->json(['error' => 'Failed to retrieve data'], $response->status());
+    }
+
     public function getToken(Request $request)
     {
         $response = Http::asForm()->withBasicAuth($this->clientID, $this->clientSecret)
