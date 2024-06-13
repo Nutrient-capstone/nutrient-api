@@ -21,7 +21,7 @@ class FatsecretController extends Controller
         $response = Http::asForm()->withBasicAuth($this->clientID, $this->clientSecret)
             ->post("https://oauth.fatsecret.com/connect/token", [
                 "grant_type" => "client_credentials",
-                "scope" => "basic premier",
+                "scope" => "basic",
             ]);
 
         if ($response->successful()) {
@@ -41,12 +41,13 @@ class FatsecretController extends Controller
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . $request->token
         ])->get("https://platform.fatsecret.com/rest/server.api", [
-            'method' => 'foods.search.v3',
+            'method' => 'foods.search',
             'search_expression' => $request->search,
             'format' => 'json',
-            'include_sub_categories' => 'true',
-            'flag_default_serving' => 'true',
-            'max_results' => 10
+            'page_number' => 0,
+            'max_results' => 10,
+            'region' => 'ID',
+            'language' => 'id'
         ]);
 
         if ($response->successful()) {
