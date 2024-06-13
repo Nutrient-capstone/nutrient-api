@@ -21,7 +21,7 @@ class FatsecretController extends Controller
         $response = Http::asForm()->withBasicAuth($this->clientID, $this->clientSecret)
             ->post("https://oauth.fatsecret.com/connect/token", [
                 "grant_type" => "client_credentials",
-                "scope" => "basic",
+                "scope" => "basic premier",
             ]);
 
         if ($response->successful()) {
