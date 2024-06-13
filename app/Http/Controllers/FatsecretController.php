@@ -22,7 +22,7 @@ class FatsecretController extends Controller
             'Content-Type' => 'application/json',
             'Authorization' => 'Bearer ' . $request->token
         ])->get('https://platform.fatsecret.com/rest/server.api', [
-            'method' => 'food.get.v4',
+            'method' => 'food.get',
             'format' => 'json',
             'food_id' => $id
         ]);
