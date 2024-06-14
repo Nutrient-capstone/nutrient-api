@@ -268,6 +268,8 @@ class UserController extends Controller
                 // return DailyIntake::where('user_id', $user->id)->latest()->first();
                 $userData = UserData::where('user_id', $id)->firstOrFail();
                 // Update only if there is a change in the column except photo
+                // Log to check if userData is found
+                \Log::info('UserData found: ' . json_encode($userData));
                 $user->update([
                     'username' => $data['username'],
                 ]);
@@ -279,6 +281,9 @@ class UserController extends Controller
                 ]);
                 if ($userData->wasChanged('height') || $userData->wasChanged('height') || $userData->wasChanged('birthdate')) {
                     $dailyIntake = DailyIntake::where('user_id', $user->id)->latest()->first();
+
+                    // Log to check if dailyIntake is found
+                    \Log::info('DailyIntake found: ' . json_encode($dailyIntake));
                     $resultBmi = $this->countBmi($data['weight'], $data['height']);
                     $user->bmi()->create([
                         "height" => $data['height'],
