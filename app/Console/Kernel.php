@@ -14,6 +14,10 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('app:create-new-daily-intake-row')->dailyAt('00:00');
+
+        $schedule->call(function () {
+            \Log::info('This is a scheduled log entry.');
+        })->everyMinute();
     }
 
     /**
@@ -21,7 +25,7 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__.'/Commands');
+        $this->load(__DIR__ . '/Commands');
 
         require base_path('routes/console.php');
     }
